@@ -19,3 +19,19 @@ Models used in the paper can be found by going to Box and downloading the folder
 # Maintainers
 * [Harmon Bhasin](https://harmonbhasin.com/)
 # CS182_Project
+
+
+### FROM CS182 Project
+
+1. setup environment
+
+```bash
+conda env create -f environment.yml
+conda activate in-context-learning
+```
+    
+2. check installation
+```bash
+python -V
+pip list | grep torch
+```
