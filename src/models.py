@@ -9,7 +9,7 @@ from sklearn import tree
 import xgboost as xgb
 from random import randint
 
-from base_models import NeuralNetwork, ParallelNetworks
+from .base_models import NeuralNetwork, ParallelNetworks
 
 
 def build_model(conf):
