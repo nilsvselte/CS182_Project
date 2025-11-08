@@ -1,15 +1,16 @@
-import torch
-import torch.nn as nn
-from transformers import GPT2Model, GPT2Config
-from tqdm import tqdm
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import LogisticRegression, Lasso
 import warnings
-from sklearn import tree
-import xgboost as xgb
 from random import randint
 
-from .base_models import NeuralNetwork, ParallelNetworks
+import torch
+import torch.nn as nn
+import xgboost as xgb
+from sklearn import tree
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.svm import LinearSVC
+from tqdm import tqdm
+from transformers import GPT2Config, GPT2Model
+
+from base_models import NeuralNetwork, ParallelNetworks
 
 
 def build_model(conf):

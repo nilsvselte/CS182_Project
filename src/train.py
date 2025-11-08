@@ -1,21 +1,20 @@
 import os
 import re
-from random import randint
 import uuid
 from itertools import product
+from random import randint
 
+import torch
+import wandb
+import yaml
 from quinine import QuinineArgumentParser
 from tqdm import tqdm
-import torch
-import yaml
 
 from eval import get_run_metrics
-from tasks import get_task_sampler
+from models import build_model
 from samplers import get_data_sampler, sample_transformation
 from schema import schema
-from models import build_model
-
-import wandb
+from tasks import get_task_sampler
 
 torch.backends.cudnn.benchmark = True
 
