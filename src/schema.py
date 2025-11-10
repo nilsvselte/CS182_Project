@@ -1,17 +1,6 @@
-from quinine import (
-    tstring,
-    tinteger,
-    tfloat,
-    tboolean,
-    stdict,
-    tdict,
-    default,
-    required,
-    allowed,
-    nullable,
-)
 from funcy import merge
-
+from quinine import (allowed, default, nullable, required, stdict, tboolean,
+                     tdict, tfloat, tinteger, tstring)
 
 model_schema = {
     "family": merge(tstring, allowed(["gpt2", "lstm"])),
@@ -40,6 +29,7 @@ TASK_LIST = [
     "linear_classification",
     "relu_2nn_regression",
     "decision_tree",
+    "quadratic_regression",
 ]
 
 training_schema = {
