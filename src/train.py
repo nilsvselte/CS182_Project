@@ -12,6 +12,7 @@ from curriculum import Curriculum
 from eval import get_run_metrics
 from models import build_model
 from samplers import get_data_sampler
+from task_labeling import TaskLabeler
 from schema import schema
 from tasks import get_task_sampler
 
@@ -36,7 +37,7 @@ def sample_seeds(total_seeds, count):
     return seeds
 
 
-def train(model, args):
+def train(model, args, task_labeler):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.training.learning_rate)
     curriculum = Curriculum(args.training.curriculum)
 
@@ -50,12 +51,13 @@ def train(model, args):
         for i in range(state["train_step"] + 1):
             curriculum.update()
 
-    n_dims = model.n_dims
+    feature_dims = task_labeler.feature_dims
+    total_dims = task_labeler.model_n_dims
     bsize = args.training.batch_size
-    data_sampler = get_data_sampler(args.training.data, n_dims=n_dims)
+    data_sampler = get_data_sampler(args.training.data, n_dims=total_dims)
     task_sampler = get_task_sampler(
         args.training.task,
-        n_dims,
+        feature_dims,
         bsize,
         num_tasks=args.training.num_tasks,
         **args.training.task_kwargs,
@@ -76,14 +78,20 @@ def train(model, args):
             data_sampler_args["seeds"] = seeds
             task_sampler_args["seeds"] = [s + 1 for s in seeds]
 
+        truncation = task_labeler.augmentation_truncation(
+            curriculum.n_dims_truncated
+        )
         xs = data_sampler.sample_xs(
-            curriculum.n_points,
-            bsize,
-            curriculum.n_dims_truncated,
-            **data_sampler_args,
+            curriculum.n_points, bsize, truncation, **data_sampler_args
         )
         task = task_sampler(**task_sampler_args)
-        ys = task.evaluate(xs)
+        feature_xs = task_labeler.feature_slice(xs)
+        if task_labeler.enabled:
+            ys, metadata = task.evaluate(feature_xs, return_metadata=True)
+            label_name = metadata.get("task_label", task.task_label)
+            xs = task_labeler.apply(xs, label_name)
+        else:
+            ys = task.evaluate(feature_xs)
 
         loss_func = task.get_training_metric()
 
@@ -137,7 +145,7 @@ def train(model, args):
             torch.save(model.state_dict(), os.path.join(args.out_dir, f"model_{i}.pt"))
 
 
-def main(args):
+def main(args, task_labeler):
     if args.test_run:
         curriculum_args = args.training.curriculum
         curriculum_args.points.start = curriculum_args.points.end
@@ -158,7 +166,7 @@ def main(args):
     model.to(device)
     model.train()
 
-    train(model, args)
+    train(model, args, task_labeler)
 
     if not args.test_run:
         _ = get_run_metrics(args.out_dir)  # precompute metrics for eval
@@ -169,6 +177,11 @@ if __name__ == "__main__":
     args = parser.parse_quinfig()
     assert args.model.family in ["gpt2", "lstm"]
     print(f"Running with: {args}")
+
+    task_labeler = TaskLabeler(
+        getattr(args.training, "task_labeling", None), args.model.n_dims
+    )
+    args.model.n_dims = task_labeler.model_n_dims
 
     if not args.test_run:
         run_id = args.training.resume_id
@@ -183,4 +196,4 @@ if __name__ == "__main__":
         with open(os.path.join(out_dir, "config.yaml"), "w") as yaml_file:
             yaml.dump(args.__dict__, yaml_file, default_flow_style=False)
 
-    main(args)
+    main(args, task_labeler)

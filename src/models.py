@@ -1,14 +1,17 @@
+import warnings
+
 import torch
 import torch.nn as nn
-from transformers import GPT2Model, GPT2Config
-from tqdm import tqdm
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import LogisticRegression, Lasso
-import warnings
-from sklearn import tree
 import xgboost as xgb
+from sklearn import tree
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.svm import LinearSVC
+from tqdm import tqdm
+from transformers import GPT2Config, GPT2Model
 
 from base_models import NeuralNetwork, ParallelNetworks
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def build_model(conf):
@@ -473,5 +476,7 @@ class XGBoostModel:
                     pred[j] = y_pred[0].item()
 
             preds.append(pred)
+
+        return torch.stack(preds, dim=1)
 
         return torch.stack(preds, dim=1)

@@ -36,11 +36,17 @@ to `src/conf/`.
 - `model`: Must match `model_schema` (family, `n_dims`, `n_positions`, `n_embd`,
   `n_layer`, `n_head`). These values are passed directly into
   `models.build_model`.
-- `training`: Controls the data sampler, task sampler, optimizer hyper‑parameters,
-  checkpoint cadence, and curriculum schedule. See `src/schema.py` lines 37‑58
+- `training`: Controls the data sampler, task sampler, optimizer hyper-parameters,
+  checkpoint cadence, and curriculum schedule. See `src/schema.py` lines 37-58
   for allowed tasks and defaults.
-- `wandb`: Mirrors `wandb.init` arguments in `src/train.py` lines 147‑155,
-  allowing per‑run names or notes.
+- `training.task_labeling` *(optional)*: Enables a lightweight channel that tags
+  every context point with the task family (e.g., linear vs. quadratic). Set
+  `enabled: true`, choose a `dimension` (defaults to 1), and optionally provide
+  `manual_map` entries such as `linear: [0.0]`, `quadratic: [1.0]`. When enabled,
+  the model input dimension automatically increases by `dimension`, and the extra
+  coordinates are populated with the task label.
+- `wandb`: Mirrors `wandb.init` arguments in `src/train.py` lines 147-155,
+  allowing per-run names or notes.
 - `out_dir`: Base directory where checkpoints live; `train.py` appends a UUID to
   keep runs isolated.
 

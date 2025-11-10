@@ -2,16 +2,31 @@ import json
 import os
 import sys
 
-from munch import Munch
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 import torch
 import yaml
+from munch import Munch
+from tqdm import tqdm
 
 import models
 from samplers import get_data_sampler, sample_transformation
+from task_labeling import TaskLabeler
 from tasks import get_task_sampler
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def build_task_labeler(conf):
+    task_label_cfg = getattr(conf.training, "task_labeling", None)
+    if task_label_cfg and getattr(task_label_cfg, "enabled", False):
+        base_dims = conf.model.n_dims - getattr(task_label_cfg, "dimension", 1)
+    else:
+        base_dims = conf.model.n_dims
+    labeler = TaskLabeler(task_label_cfg, base_dims)
+    if labeler.model_n_dims != conf.model.n_dims:
+        raise ValueError("Mismatch between stored config and task label settings.")
+    return labeler
 
 
 def get_model_from_run(run_path, step=-1, only_conf=False):
@@ -38,15 +53,25 @@ def get_model_from_run(run_path, step=-1, only_conf=False):
 # Functions for evaluation
 
 
-def eval_batch(model, task_sampler, xs, xs_p=None):
+def eval_batch(model, task_sampler, xs, xs_p=None, task_labeler=None):
     task = task_sampler()
     if torch.cuda.is_available() and model.name.split("_")[0] in ["gpt2", "lstm"]:
         device = "cuda"
     else:
         device = "cpu"
 
+    labeler_enabled = bool(task_labeler and task_labeler.enabled)
+
     if xs_p is None:
-        ys = task.evaluate(xs)
+        feature_xs = (
+            task_labeler.feature_slice(xs) if labeler_enabled else xs
+        )
+        if labeler_enabled:
+            ys, metadata = task.evaluate(feature_xs, return_metadata=True)
+            label_name = metadata.get("task_label", task.task_label)
+            xs = task_labeler.apply(xs, label_name)
+        else:
+            ys = task.evaluate(feature_xs)
         pred = model(xs.to(device), ys.to(device)).detach()
         metrics = task.get_metric()(pred.cpu(), ys)
     else:
@@ -54,7 +79,13 @@ def eval_batch(model, task_sampler, xs, xs_p=None):
         metrics = torch.zeros(b_size, n_points)
         for i in range(n_points):
             xs_comb = torch.cat((xs[:, :i, :], xs_p[:, i:, :]), dim=1)
-            ys = task.evaluate(xs_comb)
+            feature_xs = task_labeler.feature_slice(xs_comb) if labeler_enabled else xs_comb
+            if labeler_enabled:
+                ys, metadata = task.evaluate(feature_xs, return_metadata=True)
+                label_name = metadata.get("task_label", task.task_label)
+                xs_comb = task_labeler.apply(xs_comb, label_name)
+            else:
+                ys = task.evaluate(feature_xs)
 
             pred = model(xs_comb.to(device), ys.to(device), inds=[i]).detach()
             metrics[:, i] = task.get_metric()(pred.cpu(), ys)[:, i]
@@ -159,6 +190,7 @@ def eval_model(
     batch_size=64,
     data_sampler_kwargs={},
     task_sampler_kwargs={},
+    task_labeler=None,
 ):
     """
     Evaluate a model on a task with a variety of strategies.
@@ -170,9 +202,15 @@ def eval_model(
     """
 
     assert num_eval_examples % batch_size == 0
-    data_sampler = get_data_sampler(data_name, n_dims, **data_sampler_kwargs)
+    if task_labeler is None:
+        total_dims = n_dims
+        feature_dims = n_dims
+    else:
+        total_dims = task_labeler.model_n_dims
+        feature_dims = task_labeler.feature_dims
+    data_sampler = get_data_sampler(data_name, total_dims, **data_sampler_kwargs)
     task_sampler = get_task_sampler(
-        task_name, n_dims, batch_size, **task_sampler_kwargs
+        task_name, feature_dims, batch_size, **task_sampler_kwargs
     )
 
     all_metrics = []
@@ -181,7 +219,7 @@ def eval_model(
     for i in range(num_eval_examples // batch_size):
         xs, xs_p = generating_func(data_sampler, n_points, batch_size)
 
-        metrics = eval_batch(model, task_sampler, xs, xs_p)
+        metrics = eval_batch(model, task_sampler, xs, xs_p, task_labeler)
         all_metrics.append(metrics)
 
     metrics = torch.cat(all_metrics, dim=0)
@@ -190,7 +228,8 @@ def eval_model(
 
 
 def build_evals(conf):
-    n_dims = conf.model.n_dims
+    task_labeler = build_task_labeler(conf)
+    n_dims = task_labeler.model_n_dims
     n_points = conf.training.curriculum.points.end
     batch_size = conf.training.batch_size
 
@@ -204,6 +243,7 @@ def build_evals(conf):
         "batch_size": batch_size,
         "data_name": data_name,
         "prompting_strategy": "standard",
+        "task_labeler": task_labeler,
     }
 
     evaluation_kwargs = {}
@@ -295,7 +335,7 @@ def get_run_metrics(
         all_models = []
     else:
         model, conf = get_model_from_run(run_path, step)
-        model = model.cuda().eval()
+        model = model.to(device).eval()
         all_models = [model]
         if not skip_baselines:
             all_models += models.get_relevant_baselines(conf.training.task)
@@ -396,4 +436,5 @@ if __name__ == "__main__":
         print(f"Evaluating task {task}")
         for run_id in tqdm(os.listdir(task_dir)):
             run_path = os.path.join(run_dir, task, run_id)
+            metrics = get_run_metrics(run_path)
             metrics = get_run_metrics(run_path)

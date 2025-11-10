@@ -26,6 +26,8 @@ def cross_entropy(ys_pred, ys):
 
 
 class Task:
+    task_label = "generic"
+
     def __init__(self, n_dims, batch_size, pool_dict=None, seeds=None):
         self.n_dims = n_dims
         self.b_size = batch_size
@@ -33,7 +35,13 @@ class Task:
         self.seeds = seeds
         assert pool_dict is None or seeds is None
 
-    def evaluate(self, xs):
+    def evaluate(self, xs, return_metadata=False):
+        ys = self._evaluate(xs)
+        if return_metadata:
+            return ys, {"task_label": self.task_label}
+        return ys
+
+    def _evaluate(self, xs):
         raise NotImplementedError
 
     @staticmethod
@@ -74,6 +82,8 @@ def get_task_sampler(
 
 
 class LinearRegression(Task):
+    task_label = "linear"
+
     def __init__(self, n_dims, batch_size, pool_dict=None, seeds=None, scale=1):
         """scale: a constant by which to scale the randomly sampled weights."""
         super(LinearRegression, self).__init__(n_dims, batch_size, pool_dict, seeds)
@@ -93,7 +103,7 @@ class LinearRegression(Task):
             indices = torch.randperm(len(pool_dict["w"]))[:batch_size]
             self.w_b = pool_dict["w"][indices]
 
-    def evaluate(self, xs_b):
+    def _evaluate(self, xs_b):
         w_b = self.w_b.to(xs_b.device)
         ys_b = self.scale * (xs_b @ w_b)[:, :, 0]
         return ys_b
@@ -112,6 +122,7 @@ class LinearRegression(Task):
 
 
 class SparseLinearRegression(LinearRegression):
+    task_label = "sparse_linear"
     def __init__(
         self,
         n_dims,
@@ -142,7 +153,7 @@ class SparseLinearRegression(LinearRegression):
             mask[perm[:sparsity]] = False
             w[mask] = 0
 
-    def evaluate(self, xs_b):
+    def _evaluate(self, xs_b):
         w_b = self.w_b.to(xs_b.device)
         ys_b = self.scale * (xs_b @ w_b)[:, :, 0]
         return ys_b
@@ -157,8 +168,10 @@ class SparseLinearRegression(LinearRegression):
 
 
 class LinearClassification(LinearRegression):
-    def evaluate(self, xs_b):
-        ys_b = super().evaluate(xs_b)
+    task_label = "linear_classification"
+
+    def _evaluate(self, xs_b):
+        ys_b = super()._evaluate(xs_b)
         return ys_b.sign()
 
     @staticmethod
@@ -171,6 +184,8 @@ class LinearClassification(LinearRegression):
 
 
 class NoisyLinearRegression(LinearRegression):
+    task_label = "noisy_linear"
+
     def __init__(
         self,
         n_dims,
@@ -188,8 +203,8 @@ class NoisyLinearRegression(LinearRegression):
         self.noise_std = noise_std
         self.renormalize_ys = renormalize_ys
 
-    def evaluate(self, xs_b):
-        ys_b = super().evaluate(xs_b)
+    def _evaluate(self, xs_b):
+        ys_b = super()._evaluate(xs_b)
         ys_b_noisy = ys_b + torch.randn_like(ys_b) * self.noise_std
         if self.renormalize_ys:
             ys_b_noisy = ys_b_noisy * math.sqrt(self.n_dims) / ys_b_noisy.std()
@@ -198,7 +213,9 @@ class NoisyLinearRegression(LinearRegression):
 
 
 class QuadraticRegression(LinearRegression):
-    def evaluate(self, xs_b):
+    task_label = "quadratic"
+
+    def _evaluate(self, xs_b):
         w_b = self.w_b.to(xs_b.device)
         ys_b_quad = ((xs_b**2) @ w_b)[:, :, 0]
         #         ys_b_quad = ys_b_quad * math.sqrt(self.n_dims) / ys_b_quad.std()
@@ -209,6 +226,8 @@ class QuadraticRegression(LinearRegression):
 
 
 class Relu2nnRegression(Task):
+    task_label = "relu_2nn"
+
     def __init__(
         self,
         n_dims,
@@ -244,7 +263,7 @@ class Relu2nnRegression(Task):
             self.W1 = pool_dict["W1"][indices]
             self.W2 = pool_dict["W2"][indices]
 
-    def evaluate(self, xs_b):
+    def _evaluate(self, xs_b):
         W1 = self.W1.to(xs_b.device)
         W2 = self.W2.to(xs_b.device)
         # Renormalize to Linear Regression Scale
@@ -271,6 +290,8 @@ class Relu2nnRegression(Task):
 
 
 class DecisionTree(Task):
+    task_label = "decision_tree"
+
     def __init__(self, n_dims, batch_size, pool_dict=None, seeds=None, depth=4):
 
         super(DecisionTree, self).__init__(n_dims, batch_size, pool_dict, seeds)
@@ -307,7 +328,7 @@ class DecisionTree(Task):
         else:
             raise NotImplementedError
 
-    def evaluate(self, xs_b):
+    def _evaluate(self, xs_b):
         dt_tensor = self.dt_tensor.to(xs_b.device)
         target_tensor = self.target_tensor.to(xs_b.device)
         ys_b = torch.zeros(xs_b.shape[0], xs_b.shape[1], device=xs_b.device)
