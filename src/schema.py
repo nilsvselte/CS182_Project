@@ -1,17 +1,6 @@
-from quinine import (
-    tstring,
-    tinteger,
-    tfloat,
-    tboolean,
-    stdict,
-    tdict,
-    default,
-    required,
-    allowed,
-    nullable,
-)
 from funcy import merge
-
+from quinine import (allowed, default, nullable, required, stdict, tboolean,
+                     tdict, tfloat, tinteger, tstring)
 
 model_schema = {
     "family": merge(tstring, allowed(["gpt2", "lstm"])),
@@ -40,7 +29,7 @@ TASK_LIST = [
     "linear_classification",
     "relu_2nn_regression",
     "decision_tree",
-    "quadratic_regression"
+    "quadratic_regression",
 ]
 
 training_schema = {
@@ -74,6 +63,13 @@ wandb_schema = {
     "log_every_steps": merge(tinteger, default(10)),
 }
 
+schema = {
+    "out_dir": merge(tstring, required),
+    "model": stdict(model_schema),
+    "training": stdict(training_schema),
+    "wandb": stdict(wandb_schema),
+    "test_run": merge(tboolean, default(False)),
+}
 schema = {
     "out_dir": merge(tstring, required),
     "model": stdict(model_schema),
