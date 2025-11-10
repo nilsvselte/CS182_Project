@@ -152,6 +152,16 @@ Key relationships:
   2. Register it in `get_data_sampler`.
   3. Allow the distribution name in `schema.py`’s `training.data` field.
 
+- **Task-aware channels**
+  1. Flip on `training.task_labeling.enabled` for configs that mix task families
+     (e.g., linear + quadratic). The runner will increase `model.n_dims` by the
+     requested `dimension` and automatically overwrite the new coordinates with a
+     deterministic encoding of the task label coming from `tasks.py`.
+  2. Optionally pin exact values via `training.task_labeling.manual_map` (each map
+     entry should provide a float or list matching `dimension`).
+  3. Evaluation uses the saved config to recreate the same label injection, so no
+     extra work is needed when running `eval.py`.
+
 - **Alternative model families**
   1. Extend `build_model` in `src/models.py` and add the option to
      `model_schema['family']`.
