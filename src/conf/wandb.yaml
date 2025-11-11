@@ -1,5 +1,5 @@
 wandb:
-    entity: nilsvselte-university-of-california-berkeley
+    entity: hannaroed-university-of-california-berkeley
     project: in-context-learning-icl
     notes:
     log_every_steps: 100
