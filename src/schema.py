@@ -70,3 +70,10 @@ schema = {
     "wandb": stdict(wandb_schema),
     "test_run": merge(tboolean, default(False)),
 }
+schema = {
+    "out_dir": merge(tstring, required),
+    "model": stdict(model_schema),
+    "training": stdict(training_schema),
+    "wandb": stdict(wandb_schema),
+    "test_run": merge(tboolean, default(False)),
+}

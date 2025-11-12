@@ -1,0 +1,5 @@
+wandb:
+    entity: dagnystreit-university-of-california-berkeley
+    project: in-context-learning-icl
+    notes:
+    log_every_steps: 100
