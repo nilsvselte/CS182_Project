@@ -7,5 +7,3 @@ echo "model 2 running"
 uv run python train.py --config conf/linear_sweep/linear2.yaml
 echo "model 3 running"
 uv run python train.py --config conf/linear_sweep/linear3.yaml
-echo "model 4 running"
-uv run python train.py --config conf/linear_sweep/linear4.yaml
