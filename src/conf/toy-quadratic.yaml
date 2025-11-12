@@ -3,8 +3,8 @@ inherit:
   - wandb.yaml
 
 model:
-  n_dims: 5
-  n_positions: 11
+  n_dims: 2
+  n_positions: 101
 
 training:
   task: quadratic_regression
@@ -14,20 +14,20 @@ training:
   learning_rate: 0.0001
   save_every_steps: 1000
   keep_every_steps: 100000
-  train_steps: 5001
+  train_steps: 200001
   curriculum:
     dims:
-      start: 5
-      end: 5
-      inc: 1
+      start: 2
+      end: 2
+      inc: 0
       interval: 2000
     points:
       start: 11
-      end: 11
+      end: 41
       inc: 2
       interval: 2000
 
-out_dir: ../models/linear_regression
+out_dir: ../models/quadratic_regression
 
 wandb:
-  name: "quadratic_regression_toy"
+  name: "quadratic_regression"
