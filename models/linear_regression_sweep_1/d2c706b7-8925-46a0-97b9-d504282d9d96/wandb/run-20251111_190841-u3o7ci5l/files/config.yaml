@@ -1,0 +1,88 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.11
+    code_path: code/src/train.py
+    framework: xgboost
+    huggingface_version: 4.17.0
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.10.19
+    start_time: 1762916921
+    t:
+      1:
+      - 1
+      - 5
+      - 6
+      - 11
+      - 49
+      3:
+      - 13
+      - 16
+      4: 3.10.19
+      5: 0.12.11
+      6: 4.17.0
+      8:
+      - 5
+config:
+  desc: null
+  value: conf/linear_sweep/linear1.yaml
+inherit:
+  desc: null
+  value:
+  - /home/marcel/hanna/CS182_Project/src/conf/base_sweep/base1.yaml
+model:
+  desc: null
+  value:
+    family: gpt2
+    n_dims: 2
+    n_embd: 128
+    n_head: 8
+    n_layer: 8
+    n_positions: 101
+out_dir:
+  desc: null
+  value: ../models/linear_regression_sweep_1/d2c706b7-8925-46a0-97b9-d504282d9d96
+test_run:
+  desc: null
+  value: false
+training:
+  desc: null
+  value:
+    batch_size: 64
+    curriculum:
+      dims:
+        end: 2
+        inc: 0
+        interval: 101
+        start: 2
+      points:
+        end: 41
+        inc: 2
+        interval: 2000
+        start: 11
+    data: gaussian
+    keep_every_steps: 100000
+    learning_rate: 0.0001
+    num_tasks: null
+    num_training_examples: null
+    resume_id: null
+    save_every_steps: 1000
+    task: linear_regression
+    task_kwargs: {}
+    task_labeling:
+      dimension: 1
+      enabled: false
+      manual_map: null
+      mode: auto
+    train_steps: 500001
+wandb:
+  desc: null
+  value:
+    entity: dagnystreit-university-of-california-berkeley
+    log_every_steps: 100
+    name: linear_regression_standard_sweep_1
+    notes: ''
+    project: in-context-learning-icl

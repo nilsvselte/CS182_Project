@@ -1,0 +1,46 @@
+config: conf/linear_sweep/linear1.yaml
+inherit:
+- /home/marcel/hanna/CS182_Project/src/conf/base_sweep/base1.yaml
+model:
+  family: gpt2
+  n_dims: 2
+  n_embd: 128
+  n_head: 8
+  n_layer: 8
+  n_positions: 101
+out_dir: ../models/linear_regression_sweep_1/a31ca37b-14ae-47c3-8082-59496c052eed
+test_run: false
+training:
+  batch_size: 64
+  curriculum:
+    dims:
+      end: 2
+      inc: 0
+      interval: 101
+      start: 2
+    points:
+      end: 41
+      inc: 2
+      interval: 2000
+      start: 11
+  data: gaussian
+  keep_every_steps: 100000
+  learning_rate: 0.0001
+  num_tasks: null
+  num_training_examples: null
+  resume_id: null
+  save_every_steps: 1000
+  task: linear_regression
+  task_kwargs: {}
+  task_labeling:
+    dimension: 1
+    enabled: false
+    manual_map: null
+    mode: auto
+  train_steps: 500001
+wandb:
+  entity: dagnystreit-university-of-california-berkeley
+  log_every_steps: 100
+  name: linear_regression_standard_sweep_1
+  notes: ''
+  project: in-context-learning-icl

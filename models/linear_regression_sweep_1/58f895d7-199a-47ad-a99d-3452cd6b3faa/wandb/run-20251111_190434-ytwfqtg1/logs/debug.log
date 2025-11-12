@@ -1,0 +1,35 @@
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_setup.py:_flush():75] Loading settings from /home/marcel/.config/wandb/settings
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_setup.py:_flush():75] Loading settings from /home/marcel/hanna/CS182_Project/src/wandb/settings
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_setup.py:_flush():75] Loading settings from environment variables: {}
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_setup.py:_flush():75] Inferring run settings from compute environment: {'program_relpath': 'src/train.py', 'program': '/home/marcel/hanna/CS182_Project/src/train.py'}
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_init.py:_log_setup():405] Logging user logs to ../models/linear_regression_sweep_1/58f895d7-199a-47ad-a99d-3452cd6b3faa/wandb/run-20251111_190434-ytwfqtg1/logs/debug.log
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_init.py:_log_setup():406] Logging internal logs to ../models/linear_regression_sweep_1/58f895d7-199a-47ad-a99d-3452cd6b3faa/wandb/run-20251111_190434-ytwfqtg1/logs/debug-internal.log
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_init.py:init():439] calling init triggers
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_init.py:init():442] wandb.init called with sweep_config: {}
+config: {'model': {'family': 'gpt2', 'n_embd': 128, 'n_layer': 8, 'n_head': 8, 'n_dims': 2, 'n_positions': 101}, 'wandb': {'entity': 'dagnystreit-university-of-california-berkeley', 'project': 'in-context-learning-icl', 'notes': '', 'log_every_steps': 100, 'name': 'linear_regression_standard_sweep_1'}, 'inherit': ['/home/marcel/hanna/CS182_Project/src/conf/base_sweep/base1.yaml'], 'training': {'data': 'gaussian', 'task_kwargs': {}, 'batch_size': 64, 'learning_rate': 0.0001, 'save_every_steps': 1000, 'keep_every_steps': 100000, 'train_steps': 500001, 'curriculum': {'dims': {'start': 2, 'end': 2, 'inc': 0, 'interval': 101}, 'points': {'interval': 2000, 'end': 41, 'inc': 2, 'start': 11}}, 'num_training_examples': None, 'task_labeling': {'enabled': False, 'mode': 'auto', 'manual_map': None, 'dimension': 1}, 'resume_id': None, 'num_tasks': None, 'task': 'linear_regression'}, 'config': 'conf/linear_sweep/linear1.yaml', 'out_dir': '../models/linear_regression_sweep_1/58f895d7-199a-47ad-a99d-3452cd6b3faa', 'test_run': False}
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [wandb_init.py:init():492] starting backend
+2025-11-11 19:04:34,861 INFO    MainThread:466614 [backend.py:_multiprocessing_setup():99] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2025-11-11 19:04:34,862 INFO    MainThread:466614 [backend.py:ensure_launched():219] starting backend process...
+2025-11-11 19:04:34,862 INFO    MainThread:466614 [backend.py:ensure_launched():224] started backend process with pid: 466664
+2025-11-11 19:04:34,862 INFO    MainThread:466614 [wandb_init.py:init():501] backend started and connected
+2025-11-11 19:04:34,863 INFO    MainThread:466614 [wandb_init.py:init():565] updated telemetry
+2025-11-11 19:04:34,865 INFO    MainThread:466614 [wandb_init.py:init():596] communicating run to backend with 30 second timeout
+2025-11-11 19:04:37,074 WARNING MainThread:466614 [wandb_init.py:init():975] interrupted
+Traceback (most recent call last):
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 954, in init
+    run = wi.init()
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/wandb_init.py", line 597, in init
+    run_result = backend.interface.communicate_run(run, timeout=30)
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 210, in communicate_run
+    return self._communicate_run(run, timeout=timeout)
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/interface/interface_shared.py", line 320, in _communicate_run
+    resp = self._communicate(req, timeout=timeout)
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/interface/interface_shared.py", line 222, in _communicate
+    return self._communicate_async(rec, local=local).get(timeout=timeout)
+  File "/home/marcel/hanna/CS182_Project/.venv/lib/python3.10/site-packages/wandb/sdk/interface/router.py", line 37, in get
+    is_set = self._object_ready.wait(timeout)
+  File "/home/marcel/.local/share/uv/python/cpython-3.10.19-linux-x86_64-gnu/lib/python3.10/threading.py", line 607, in wait
+    signaled = self._cond.wait(timeout)
+  File "/home/marcel/.local/share/uv/python/cpython-3.10.19-linux-x86_64-gnu/lib/python3.10/threading.py", line 324, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt
