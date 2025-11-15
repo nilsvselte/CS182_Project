@@ -23,7 +23,7 @@ training:
             interval: 2000
         points:
             start: 11
-            end: 11
+            end: 41
             inc: 2
             interval: 2000
     curriculum_type: random
