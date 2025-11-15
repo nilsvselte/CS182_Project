@@ -53,6 +53,8 @@ training_schema = {
             "manual_map": merge(tdict, nullable, default(None)),
         }
     ),
+    "curriculum_type": merge(tstring, nullable, default(None)),
+    "problem_type": merge(tstring, nullable, default(None)),
 }
 
 wandb_schema = {

@@ -385,8 +385,11 @@ class GDModel:
                             )
 
                     optimizer.zero_grad()
-
+                    #add split on if
                     model.train()
+                    
+
+
                     outputs = model(train_xs_cur)
                     loss = loss_criterion(outputs[:, :, 0], train_ys_cur)
                     loss.backward()

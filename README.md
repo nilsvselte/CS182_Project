@@ -43,3 +43,10 @@ are as follows (starting from `src`):
 # Maintainers
 * [Shivam Garg](https://cs.stanford.edu/~shivamg/)
 * [Dimitris Tsipras](https://dtsipras.com/)
+
+# 
+# test on dual curriculum
+```
+cd src
+uv run train.py --config conf/training_dual_task.yaml
+```
