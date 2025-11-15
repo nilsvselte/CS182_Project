@@ -68,6 +68,7 @@ def get_task_sampler(
         "quadratic_regression": QuadraticRegression,
         "relu_2nn_regression": Relu2nnRegression,
         "decision_tree": DecisionTree,
+        "dual_task": DualTask
     }
     if task_name in task_names_to_classes:
         task_cls = task_names_to_classes[task_name]
@@ -79,6 +80,34 @@ def get_task_sampler(
     else:
         print("Unknown task")
         raise NotImplementedError
+
+
+class DualTask(Task):
+    task_label = "dual_task"
+
+    def __init__(self, n_dims, batch_size, pool_dict=None, seeds=None, split = None):
+        super(DualTask, self).__init__(n_dims, batch_size, pool_dict, seeds)
+        self.task1 = LinearRegression(n_dims, batch_size, pool_dict, seeds)
+        self.task2 = QuadraticRegression(n_dims, batch_size, pool_dict, seeds)
+        self.split = split if split is not None else 0.5
+
+    def _evaluate(self, xs_b):
+        split_point = int(xs_b.shape[0] * self.split)
+        ys_b1 = self.task1._evaluate(xs_b[:split_point])
+        ys_b2 = self.task2._evaluate(xs_b[split_point:])
+        ys_b = torch.cat([ys_b1, ys_b2], dim=0)
+        return ys_b
+
+    @staticmethod
+    def get_metric():
+        return squared_error
+        
+    @staticmethod
+    def get_training_metric():
+        raise NotImplementedError("DualTask does not implement a single training metric.")
+
+
+
 
 
 class LinearRegression(Task):
