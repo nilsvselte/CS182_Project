@@ -29,7 +29,7 @@ training:
   curriculum_type: sequential
   problem_type: dual
 
-out_dir: ../models/training_dual
+out_dir: ../models/dual_sequential
 
 wandb:
-  name: "training_dual"
+  name: "dual_sequential"
