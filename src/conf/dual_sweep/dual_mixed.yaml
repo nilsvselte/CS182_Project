@@ -26,7 +26,7 @@ training:
             end: 41
             inc: 2
             interval: 2000
-    curriculum_type: random
+    curriculum_type: mixed
     problem_type: dual
 
 out_dir: ../models/training_dual
