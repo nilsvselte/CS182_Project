@@ -1,10 +1,10 @@
-inherit: 
-    - ../models/standard.yaml
-    - wandb.yaml
+inherit:
+  - ../models/standard.yaml
+  - wandb.yaml
 
 model:
-    n_dims: 2
-    n_positions: 101
+  n_dims: 2
+  n_positions: 101
 
 training:
     task: linear_regression
@@ -29,7 +29,7 @@ training:
     curriculum_type: mixed
     problem_type: dual
 
-out_dir: ../models/training_dual
+out_dir: ../models/dual_mixed
 
 wandb:
-    name: "training_dual"
+  name: "dual_mixed"
