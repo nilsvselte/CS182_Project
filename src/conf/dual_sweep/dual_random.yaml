@@ -1,0 +1,35 @@
+inherit: 
+    - models/standard.yaml
+    - wandb.yaml
+
+model:
+    n_dims: 2
+    n_positions: 101
+
+training:
+    task: linear_regression
+    data: gaussian
+    task_kwargs: {}
+    batch_size: 64
+    learning_rate: 0.0001
+    save_every_steps: 1000
+    keep_every_steps: 100000
+    train_steps: 50001
+    curriculum:
+        dims:
+            start: 2
+            end: 2
+            inc: 0
+            interval: 101
+        points:
+            start: 11
+            end: 41
+            inc: 2
+            interval: 2000
+    curriculum_type: random
+    problem_type: dual
+
+out_dir: ../models/training_dual
+
+wandb:
+    name: "training_dual"
