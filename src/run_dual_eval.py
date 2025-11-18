@@ -88,8 +88,8 @@ for model_name, model_path in tqdm(models.items(), desc="Models", position=0):
         )
 
         # Save both dataframes
-        mean_csv = os.path.join(results_dir, f"linlast_{model_name}_mean.csv")
-        std_csv = os.path.join(results_dir, f"linlast_{model_name}_sem.csv")
+        mean_csv = os.path.join(results_dir, f"linear_last_{model_name}_mean.csv")
+        std_csv = os.path.join(results_dir, f"linear_last_{model_name}_sem.csv")
 
         mean_df.to_csv(mean_csv)
         std_df.to_csv(std_csv)
