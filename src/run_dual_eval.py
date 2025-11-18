@@ -17,7 +17,7 @@ models = {
 # Evaluation parameters
 A_EXAMPLES=[0, 2, 5, 7, 10, 15, 20, 25, 30]
 B_EXAMPLES=[2, 5, 7, 10, 15, 20, 25, 30, 35]
-TRIALS = 20
+TRIALS = 1000
 
 # Create results directory if it doesn't exist
 os.makedirs(results_dir, exist_ok=True)

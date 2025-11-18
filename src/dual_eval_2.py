@@ -80,12 +80,12 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
     mean_df = pd.DataFrame(
         mean_rows,
         index=a_examples,
-        columns=[f"quadratic_{b}" for b in b_examples],
+        columns=b_examples,
     )
     std_df = pd.DataFrame(
         std_rows,
         index=a_examples,
-        columns=[f"quadratic_{b}" for b in b_examples],
+        columns=b_examples,
     )
     mean_df.index.name = "linear_examples"
     std_df.index_name = "linear_examples"
