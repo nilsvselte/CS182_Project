@@ -1,7 +1,6 @@
 import os
 from dual_eval_2 import run_dual_eval
 import pandas as pd
-from tqdm import tqdm
 
 # Get the src directory
 src_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,7 +23,7 @@ TRIALS = 200
 os.makedirs(results_dir, exist_ok=True)
 
 # Run evaluation for each model
-for model_name, model_path in tqdm(models.items(), desc="Models", position=0):
+for model_name, model_path in models.items():
     print(f"\n{'='*50}")
     print(f"Running evaluation for: {model_name}")
     print(f"{'='*50}")
