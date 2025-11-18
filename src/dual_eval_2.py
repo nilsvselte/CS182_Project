@@ -3,6 +3,7 @@ import math
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from eval import build_task_labeler, get_model_from_run
 from samplers import get_data_sampler
@@ -56,36 +57,40 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
 
     mean_rows = []
     std_rows = []
-    for n_linear in a_examples:
-        mean_row = []
-        std_row = []
-        for n_quadratic in b_examples:
-            mean_loss, std_loss = average_quadratic_loss(
-                model,
-                data_sampler,
-                linear_sampler,
-                quadratic_sampler,
-                n_linear,
-                n_quadratic,
-                batch_size,
-                trials,
-                truncation,
-                device,
-            )
-            mean_row.append(mean_loss)
-            std_row.append(std_loss)
-        mean_rows.append(mean_row)
-        std_rows.append(std_row)
+    total_combinations = len(a_examples) * len(b_examples)
+    
+    with tqdm(total=total_combinations, desc="Evaluating combinations", unit="comb") as pbar:
+        for n_linear in a_examples:
+            mean_row = []
+            std_row = []
+            for n_quadratic in b_examples:
+                mean_loss, std_loss = average_quadratic_loss(
+                    model,
+                    data_sampler,
+                    linear_sampler,
+                    quadratic_sampler,
+                    n_linear,
+                    n_quadratic,
+                    batch_size,
+                    trials,
+                    truncation,
+                    device,
+                )
+                mean_row.append(mean_loss)
+                std_row.append(std_loss)
+                pbar.update(1)
+            mean_rows.append(mean_row)
+            std_rows.append(std_row)
 
     mean_df = pd.DataFrame(
         mean_rows,
         index=a_examples,
-        columns=b_examples,
+        columns=[f"quadratic_{b}" for b in b_examples],
     )
     std_df = pd.DataFrame(
         std_rows,
         index=a_examples,
-        columns=b_examples,
+        columns=[f"quadratic_{b}" for b in b_examples],
     )
     mean_df.index.name = "linear_examples"
     std_df.index_name = "linear_examples"
@@ -94,7 +99,6 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
     sem_df = std_df / math.sqrt(trials)
 
     return mean_df, sem_df
-
 
 def average_quadratic_loss(
     model,
