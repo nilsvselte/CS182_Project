@@ -52,20 +52,42 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
         conf.training.curriculum.dims.end
     )
 
-    rows = []
+    mean_rows = []
+    std_rows = []
     for n_linear in a_examples:
-        row = []
+        mean_row = []
+        std_row = []
         for n_quadratic in b_examples:
-            row.append(average_quadratic_loss(model, data_sampler, linear_sampler, quadratic_sampler, n_linear, n_quadratic, batch_size, trials, truncation, device,))
-        rows.append(row)
+            mean_loss, std_loss = average_quadratic_loss(
+                model,
+                data_sampler,
+                linear_sampler,
+                quadratic_sampler,
+                n_linear,
+                n_quadratic,
+                batch_size,
+                trials,
+                truncation,
+                device,
+            )
+            mean_row.append(mean_loss)
+            std_row.append(std_loss)
+        mean_rows.append(mean_row)
+        std_rows.append(std_row)
 
-    df = pd.DataFrame(
-        rows,
+    mean_df = pd.DataFrame(
+        mean_rows,
         index=a_examples,
         columns=[f"quadratic_{b}" for b in b_examples],
     )
-    df.index.name = "linear_examples"
-    return df
+    std_df = pd.DataFrame(
+        std_rows,
+        index=a_examples,
+        columns=[f"quadratic_{b}" for b in b_examples],
+    )
+    mean_df.index.name = "linear_examples"
+    std_df.index_name = "linear_examples"
+    return mean_df, std_df
 
 
 def average_quadratic_loss(
@@ -111,4 +133,5 @@ def average_quadratic_loss(
             target_query = quad_query[:, 0]
             losses.append(F.mse_loss(pred_query, target_query, reduction="mean").item())
 
-    return sum(losses) / len(losses)
+    losses = torch.tensor(losses)
+    return losses.mean().item(), losses.std(unbiased=True).item()
