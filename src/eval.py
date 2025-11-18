@@ -37,16 +37,18 @@ def get_model_from_run(run_path, step=-1, only_conf=False):
         return None, conf
 
     model = models.build_model(conf.model)
+    load_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if step == -1:
         state_path = os.path.join(run_path, "state.pt")
-        state = torch.load(state_path)
-        model.load_state_dict(state["model_state_dict"])
+        state = torch.load(state_path, map_location=load_device)
+        model.load_state_dict(state["model_state_dict"], strict=False)
     else:
         model_path = os.path.join(run_path, f"model_{step}.pt")
-        state_dict = torch.load(model_path)
-        model.load_state_dict(state_dict)
+        state_dict = torch.load(model_path, map_location=load_device)
+        model.load_state_dict(state_dict, strict=False)
 
+    model.to(load_device)
     return model, conf
 
 

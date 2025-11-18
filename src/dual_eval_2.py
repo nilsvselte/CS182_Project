@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -54,31 +52,23 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
         conf.training.curriculum.dims.end
     )
 
-    results = OrderedDict()
+    rows = []
     for n_linear in a_examples:
-        row = OrderedDict()
+        row = []
         for n_quadratic in b_examples:
-            row[n_quadratic] = _average_quadratic_loss(
-                model,
-                data_sampler,
-                linear_sampler,
-                quadratic_sampler,
-                n_linear,
-                n_quadratic,
-                batch_size,
-                trials,
-                truncation,
-                device,
-            )
-        results[n_linear] = row
+            row.append(average_quadratic_loss(model, data_sampler, linear_sampler, quadratic_sampler, n_linear, n_quadratic, batch_size, trials, truncation, device,))
+        rows.append(row)
 
-    df = pd.DataFrame.from_dict(results, orient="index")
+    df = pd.DataFrame(
+        rows,
+        index=a_examples,
+        columns=[f"quadratic_{b}" for b in b_examples],
+    )
     df.index.name = "linear_examples"
-    df.columns = [f"quadratic_{c}" for c in df.columns]
     return df
 
 
-def _average_quadratic_loss(
+def average_quadratic_loss(
     model,
     data_sampler,
     linear_sampler,
