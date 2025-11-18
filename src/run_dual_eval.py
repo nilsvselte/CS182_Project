@@ -15,8 +15,8 @@ models = {
 }
 
 # Evaluation parameters
-A_EXAMPLES = [2, 4]
-B_EXAMPLES = [3, 6]
+A_EXAMPLES=[0, 2, 5, 7, 10, 15, 20, 25, 30],
+B_EXAMPLES=[2, 5, 7, 10, 15, 20, 25, 30, 35],
 TRIALS = 20
 
 # Create results directory if it doesn't exist
@@ -42,19 +42,19 @@ for model_name, model_path in models.items():
             b_examples=B_EXAMPLES,
             trials=TRIALS,
             batch_size=None,
-            step=-1,      # loads state.pt
-            device="cpu", # forces CPU
+            step=-1,
+            device="cuda",
         )
         
         # Save both dataframes
         mean_csv = os.path.join(results_dir, f"{model_name}_mean.csv")
-        std_csv = os.path.join(results_dir, f"{model_name}_std.csv")
+        std_csv = os.path.join(results_dir, f"{model_name}_sem.csv")
         
         mean_df.to_csv(mean_csv)
         std_df.to_csv(std_csv)
         
         print(f"✓ Mean results saved to: {mean_csv}")
-        print(f"✓ Std results saved to: {std_csv}")
+        print(f"✓ SEM results saved to: {std_csv}")
         
     except Exception as e:
         print(f"✗ Error processing {model_name}: {e}")

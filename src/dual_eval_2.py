@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import torch
 import torch.nn.functional as F
@@ -87,7 +89,11 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
     )
     mean_df.index.name = "linear_examples"
     std_df.index_name = "linear_examples"
-    return mean_df, std_df
+
+    # standard error of the mean for per-trial means: std / sqrt(trials)
+    sem_df = std_df / math.sqrt(trials)
+
+    return mean_df, sem_df
 
 
 def average_quadratic_loss(
