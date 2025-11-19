@@ -1,7 +1,6 @@
 import os
-
+from tqdm import tqdm
 import pandas as pd
-
 from dual_eval_2 import run_dual_eval
 
 # Get the src directory
