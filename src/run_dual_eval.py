@@ -16,9 +16,9 @@ models = {
 }
 
 # Evaluation parameters
-A_EXAMPLES = [0, 2, 5, 7, 10, 15, 20]
-B_EXAMPLES = [2, 5, 7, 10, 15, 20, 25, 30, 35, 40]
-TRIALS = 200
+A_EXAMPLES = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+B_EXAMPLES = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+TRIALS = 1000
 
 # Create results directory if it doesn't exist
 os.makedirs(results_dir, exist_ok=True)
@@ -62,41 +62,41 @@ for model_name, model_path in models.items():
 
 
 # Rerun evaluation with quadratic first and then linear
-# for model_name, model_path in models.items():
-#     print(f"\n{'='*50}")
-#     print(f"Running evaluation for: {model_name}")
-#     print(f"{'='*50}")
+for model_name, model_path in models.items():
+    print(f"\n{'='*50}")
+    print(f"Running evaluation for: {model_name}")
+    print(f"{'='*50}")
 
-#     run_dir = os.path.join(project_root, model_path)
+    run_dir = os.path.join(project_root, model_path)
 
-#     # Check if model directory exists
-#     if not os.path.exists(run_dir):
-#         print(f"Warning: Model directory not found: {run_dir}")
-#         continue
+    # Check if model directory exists
+    if not os.path.exists(run_dir):
+        print(f"Warning: Model directory not found: {run_dir}")
+        continue
 
-#     try:
-#         mean_df, std_df = run_dual_eval(
-#             run_dir=run_dir,
-#             a_examples=A_EXAMPLES,
-#             b_examples=B_EXAMPLES,
-#             trials=TRIALS,
-#             batch_size=None,
-#             step=-1,
-#             device="cuda",
-#         )
+    try:
+        mean_df, std_df = run_dual_eval(
+            run_dir=run_dir,
+            a_examples=A_EXAMPLES,
+            b_examples=B_EXAMPLES,
+            trials=TRIALS,
+            batch_size=None,
+            step=-1,
+            device="cuda",
+        )
 
-#         # Save both dataframes
-#         mean_csv = os.path.join(results_dir, f"linear_last_{model_name}_mean.csv")
-#         std_csv = os.path.join(results_dir, f"linear_last_{model_name}_sem.csv")
+        # Save both dataframes
+        mean_csv = os.path.join(results_dir, f"linear_last_{model_name}_mean.csv")
+        std_csv = os.path.join(results_dir, f"linear_last_{model_name}_sem.csv")
 
-#         mean_df.to_csv(mean_csv)
-#         std_df.to_csv(std_csv)
+        mean_df.to_csv(mean_csv)
+        std_df.to_csv(std_csv)
 
-#         print(f"✓ Mean results saved to: {mean_csv}")
-#         print(f"✓ SEM results saved to: {std_csv}")
+        print(f"✓ Mean results saved to: {mean_csv}")
+        print(f"✓ SEM results saved to: {std_csv}")
 
-#     except Exception as e:
-#         print(f"✗ Error processing {model_name}: {e}")
+    except Exception as e:
+        print(f"✗ Error processing {model_name}: {e}")
 
 print(f"\n{'='*50}")
 print("Evaluation complete!")
