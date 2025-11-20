@@ -15,8 +15,8 @@ models = {
 }
 
 # Evaluation parameters
-A_EXAMPLES = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
-B_EXAMPLES = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+A_EXAMPLES = [0, 1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+B_EXAMPLES = [0, 1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 TRIALS = 1000
 SKIP_EXISTING_QUADRATIC_QUERY = True  # Skip rerunning linear-first/quadratic-query evals if files already exist
 
