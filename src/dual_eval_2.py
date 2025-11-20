@@ -64,17 +64,17 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
             mean_row = []
             std_row = []
             for n_quadratic in b_examples:
-                mean_loss, std_loss = average_quadratic_loss(
-                    model,
-                    data_sampler,
-                    linear_sampler,
-                    quadratic_sampler,
-                    n_linear,
-                    n_quadratic,
-                    batch_size,
-                    trials,
-                    truncation,
-                    device,
+                mean_loss, std_loss = average_task_loss(
+                    model=model,
+                    data_sampler=data_sampler,
+                    first_context_sampler=linear_sampler,
+                    second_context_sampler=quadratic_sampler,
+                    n_first_examples=n_linear,
+                    n_second_examples=n_quadratic,
+                    batch_size=batch_size,
+                    trials=trials,
+                    truncation=truncation,
+                    device=device,
                 )
                 mean_row.append(mean_loss)
                 std_row.append(std_loss)
@@ -129,14 +129,14 @@ def run_dual_eval_switched(
     task_kwargs = getattr(conf.training, "task_kwargs", {})
     num_tasks = getattr(conf.training, "num_tasks", None)
 
-    linear_sampler = get_task_sampler(
+    quadratic_first_sampler = get_task_sampler(
         "quadratic_regression",
         feature_dims,
         batch_size,
         num_tasks=num_tasks,
         **task_kwargs,
     )
-    quadratic_sampler = get_task_sampler(
+    linear_second_sampler = get_task_sampler(
         "linear_regression",
         feature_dims,
         batch_size,
@@ -157,17 +157,17 @@ def run_dual_eval_switched(
             mean_row = []
             std_row = []
             for n_quadratic in b_examples:
-                mean_loss, std_loss = average_quadratic_loss(
-                    model,
-                    data_sampler,
-                    linear_sampler,
-                    quadratic_sampler,
-                    n_linear,
-                    n_quadratic,
-                    batch_size,
-                    trials,
-                    truncation,
-                    device,
+                mean_loss, std_loss = average_task_loss(
+                    model=model,
+                    data_sampler=data_sampler,
+                    first_context_sampler=quadratic_first_sampler,
+                    second_context_sampler=linear_second_sampler,
+                    n_first_examples=n_linear,
+                    n_second_examples=n_quadratic,
+                    batch_size=batch_size,
+                    trials=trials,
+                    truncation=truncation,
+                    device=device,
                 )
                 mean_row.append(mean_loss)
                 std_row.append(std_loss)
@@ -194,41 +194,50 @@ def run_dual_eval_switched(
     return mean_df, sem_df
 
 
-def average_quadratic_loss(
+def average_task_loss(
     model,
     data_sampler,
-    linear_sampler,
-    quadratic_sampler,
-    a_examples,
-    b_examples,
+    first_context_sampler,
+    second_context_sampler,
+    n_first_examples,
+    n_second_examples,
     batch_size,
     trials,
     truncation,
     device,
 ):
-    # include one additional quadratic point whose label is hidden from the model
-    total_points = a_examples + b_examples + 1
+    """
+    Evaluate a model on dual-task context sequences where the second context
+    block shares its underlying function with the held-out query point.
+
+    This matches the protocol used in run_dual_eval (quadratic query after
+    linear context) and run_dual_eval_switched (linear query after quadratic
+    context).
+    """
+
+    total_points = n_first_examples + n_second_examples + 1  # +1 for the query placeholder
 
     losses = []
     with torch.no_grad():
         for _ in range(trials):
             xs = data_sampler.sample_xs(total_points, batch_size, truncation)
             segments = []
-            if a_examples:
-                linear_task = linear_sampler()
-                segments.append(linear_task.evaluate(xs[:, :a_examples, :]))
 
-            quad_task = quadratic_sampler()
-            if b_examples:
-                context_slice = xs[:, a_examples : a_examples + b_examples, :]
-                quad_context = quad_task.evaluate(context_slice)
-                segments.append(quad_context)
+            if n_first_examples:
+                first_task = first_context_sampler()
+                first_slice = xs[:, :n_first_examples, :]
+                segments.append(first_task.evaluate(first_slice))
 
-            query_slice = xs[:, a_examples + b_examples :, :]
-            quad_query = quad_task.evaluate(
-                query_slice
-            )  # true label for next B example
-            placeholder = torch.zeros_like(quad_query)
+            second_task = second_context_sampler()
+            if n_second_examples:
+                start = n_first_examples
+                end = n_first_examples + n_second_examples
+                second_slice = xs[:, start:end, :]
+                segments.append(second_task.evaluate(second_slice))
+
+            query_slice = xs[:, n_first_examples + n_second_examples :, :]
+            true_query = second_task.evaluate(query_slice)
+            placeholder = torch.zeros_like(true_query)
             segments.append(placeholder)
 
             ys_input = torch.cat(segments, dim=1)
@@ -236,7 +245,7 @@ def average_quadratic_loss(
             pred_query = preds[:, -1]
             if pred_query.ndim > 1:
                 pred_query = pred_query.squeeze(-1)
-            target_query = quad_query[:, 0]
+            target_query = true_query[:, 0]
             losses.append(F.mse_loss(pred_query, target_query, reduction="mean").item())
 
     losses = torch.tensor(losses)
