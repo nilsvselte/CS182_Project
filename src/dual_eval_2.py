@@ -93,7 +93,7 @@ def run_dual_eval(run_dir, a_examples, b_examples, trials, batch_size, step, dev
         columns=[f"quadratic_{b}" for b in b_examples],
     )
     mean_df.index.name = "linear_examples"
-    std_df.index_name = "linear_examples"
+    std_df.index.name = "linear_examples"
 
     # standard error of the mean for per-trial means: std / sqrt(trials)
     sem_df = std_df / math.sqrt(trials)
@@ -153,17 +153,19 @@ def run_dual_eval_switched(
     with tqdm(
         total=total_combinations, desc="Evaluating combinations", unit="comb"
     ) as pbar:
-        for n_linear in a_examples:
+        # a_examples are used for FIRST context (QUADRATIC)
+        # b_examples are used for SECOND context (LINEAR)
+        for n_quadratic in a_examples:
             mean_row = []
             std_row = []
-            for n_quadratic in b_examples:
+            for n_linear in b_examples:
                 mean_loss, std_loss = average_task_loss(
                     model=model,
                     data_sampler=data_sampler,
                     first_context_sampler=quadratic_first_sampler,
                     second_context_sampler=linear_second_sampler,
-                    n_first_examples=n_linear,
-                    n_second_examples=n_quadratic,
+                    n_first_examples=n_quadratic,  # First context is QUADRATIC
+                    n_second_examples=n_linear,  # Second context is LINEAR
                     batch_size=batch_size,
                     trials=trials,
                     truncation=truncation,
@@ -178,15 +180,15 @@ def run_dual_eval_switched(
     mean_df = pd.DataFrame(
         mean_rows,
         index=a_examples,
-        columns=[f"quadratic_{b}" for b in b_examples],
+        columns=[f"linear_{b}" for b in b_examples],
     )
     std_df = pd.DataFrame(
         std_rows,
         index=a_examples,
-        columns=[f"quadratic_{b}" for b in b_examples],
+        columns=[f"linear_{b}" for b in b_examples],
     )
-    mean_df.index.name = "linear_examples"
-    std_df.index_name = "linear_examples"
+    mean_df.index.name = "quadratic_examples"
+    std_df.index.name = "quadratic_examples"
 
     # standard error of the mean for per-trial means: std / sqrt(trials)
     sem_df = std_df / math.sqrt(trials)
